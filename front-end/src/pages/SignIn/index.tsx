@@ -59,7 +59,7 @@ const SigIn: React.FC = () => {
         addToast({
           type: 'error',
           title: 'Authentication error',
-          description: 'Login error occurred, check credentials!',
+          description: err.response.data.message,
         });
       }
     },
