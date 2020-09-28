@@ -5,11 +5,11 @@
 	"author": "Bernardo Generoso",
 	"license": "MIT",
 	"scripts": {
-		"dev:server": "ts-node-dev -r tsconfig-paths/register --inspect --transpileOnly --ignore-watch node_modules src/shared/infra/http/server.ts",
+		"dev:server": "ts-node-dev -r tsconfig-paths/register --inspect --transpile-only --ignore-watch node_modules src/shared/infra/http/server.ts",
 		"start": "ts-node src/shared/infra/http/server.ts",
 		"build": "tsc",
 		"typeorm": "ts-node-dev -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
-		"test": "jest"
+		"test": "jest --watch"
 	},
 	"dependencies": {
 		"bcryptjs": "^2.4.3",

@@ -36,14 +36,15 @@ class EtherealMailProvider implements IMailProvider {
   }: ISendMailDTO): Promise<void> {
     const message = await this.client.sendMail({
       from: {
-        name: from?.name || 'Team GoBarber',
-        address: from?.email || 'team@gobarber.com'
+        name: from?.name || 'Equipe GoBarber',
+        address: from?.email || 'hello@gobarber.com'
       },
       to: { name: to.name, address: to.email },
       subject,
       html: await this.mailTemplateProvider.parse(templateData)
     })
 
+    /* eslint-disable-next-line */
     console.log('Ethereal message:', nodemailer.getTestMessageUrl(message))
   }
 }

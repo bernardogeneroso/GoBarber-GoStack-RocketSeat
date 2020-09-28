@@ -1,38 +1,34 @@
-import AppError from '@shared/errors/AppError';
+import FakeUsersRepository from '@modules/users/repositories/fake/FakeUsersRepository'
 
-import FakeUsersRepository from '@modules/users/repositories/fake/FakeUsersRepository';
-import ShowProfileService from './ShowProfileService';
+import AppError from '@shared/errors/AppError'
+import ShowProfileService from './ShowProfileService'
 
-let fakeUsersRepository: FakeUsersRepository;
-let showProfileService: ShowProfileService;
+let fakeUsersRepository: FakeUsersRepository
+let showProfileService: ShowProfileService
 
-describe('UpdateProfile', () => {
-	beforeEach(() => {
-		fakeUsersRepository = new FakeUsersRepository();
+describe('ShowProfileService', () => {
+  beforeEach(() => {
+    fakeUsersRepository = new FakeUsersRepository()
+    showProfileService = new ShowProfileService(fakeUsersRepository)
+  })
 
-		showProfileService = new ShowProfileService(fakeUsersRepository);
-	});
+  it('shows user profile', async () => {
+    const params = {
+      email: 'user@email.com',
+      name: 'Test User',
+      password: '123456'
+    }
 
-	it('should be able to show the profile', async () => {
-		const user = await fakeUsersRepository.create({
-			name: 'Bernardo Generoso',
-			email: 'bernardogeneroso@mail.com',
-			password: 'bernardogeneroso123'
-		});
+    const user = await fakeUsersRepository.create(params)
+    const profile = await showProfileService.execute({ user_id: user.id })
 
-		const profile = await showProfileService.execute({
-			user_id: user.id
-		});
+    expect(profile.name).toBe(params.name)
+    expect(profile.email).toBe(params.email)
+  })
 
-		expect(profile.name).toBe('Bernardo Generoso');
-		expect(profile.email).toBe('bernardogeneroso@mail.com');
-	});
-
-	it('should not be able to show the profile from non-existing user', async () => {
-		expect(
-			showProfileService.execute({
-				user_id: 'non-existing-user-id'
-			})
-		).rejects.toBeInstanceOf(AppError);
-	});
-});
+  it('does not show profile for non existent id', async () => {
+    await expect(
+      showProfileService.execute({ user_id: 'non-existent-id' })
+    ).rejects.toBeInstanceOf(AppError)
+  })
+})

@@ -1,4 +1,4 @@
-import { getRepository, Repository } from 'typeorm'
+import { getRepository, Repository, Not } from 'typeorm'
 
 import IUsersRepository from '@modules/users/repositories/IUsersRepository'
 import User from '@modules/users/infra/typeorm//models/User'
@@ -17,6 +17,12 @@ class UsersRepository implements IUsersRepository {
 
   public async findByEmail(email: string): Promise<User | undefined> {
     return this.ormRepository.findOne({ where: { email } })
+  }
+
+  public async findAllProviders(current_user_id?: string): Promise<User[]> {
+    return current_user_id
+      ? this.ormRepository.find({ where: { id: Not(current_user_id) } })
+      : this.ormRepository.find()
   }
 
   public async create(userData: ICreateUserDTO): Promise<User> {
