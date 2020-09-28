@@ -1,13 +1,10 @@
-//import User from '@modules/users/infra/typeorm/entities/User';
-import IUsersRepository from '@modules/users/repositories/IUsersRepository';
-import IMailProvider from '@shared/container/providers/MailProvider/models/IMailProvider';
-import IUserTokenRepository from '@modules/users/repositories/IUserTokenRepository';
+import { injectable, inject } from 'tsyringe';
+import path from 'path';
 
 import AppError from '@shared/errors/AppError';
-
-import { injectable, inject } from 'tsyringe';
-
-//import AppError from '@shared/errors/AppError';
+import IUsersRepository from '@modules/users/repositories/IUsersRepository';
+import IUserTokensRepository from '@modules/users/repositories/IUserTokensRepository';
+import IMailProvider from '@shared/container/providers/MailProvider/models/IMailProvider';
 
 interface IRequest {
 	email: string;
@@ -18,19 +15,32 @@ class SendForgotPasswordEmailService {
 	constructor(
 		@inject('UsersRepository') private usersRepository: IUsersRepository,
 		@inject('MailProvider') private mailProvider: IMailProvider,
-		@inject('UserTokensRepository') private userTokenRepository: IUserTokenRepository
+		@inject('UserTokensRepository') private userTokensRepository: IUserTokensRepository
 	) {}
 
 	public async execute({ email }: IRequest): Promise<void> {
 		const user = await this.usersRepository.findByEmail(email);
 
-		if (!user) {
-			throw new AppError('User dows not exists.');
-		}
+		if (!user) throw new AppError('User not found');
 
-		await this.userTokenRepository.generate(user.id);
+		const { token } = await this.userTokensRepository.generate(user.id);
 
-		this.mailProvider.sendMail(email, 'Pedido de recuperação de password recebido com successo!');
+		const forgotPasswordTemplate = path.resolve(__dirname, '..', 'views', 'forgot_password.hbs');
+
+		await this.mailProvider.sendMail({
+			to: {
+				name: user.name,
+				email: user.email
+			},
+			subject: '[GoBarber] Recuperação da password',
+			templateData: {
+				file: forgotPasswordTemplate,
+				variables: {
+					name: user.name,
+					link: `http://localhost:3000/reset_password?token=${token}`
+				}
+			}
+		});
 	}
 }
 

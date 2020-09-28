@@ -1,80 +1,86 @@
-import FakeUsersRepository from '@modules/users/repositories/fakes/FakeUsersRepository';
-import FakeUserTokenRepository from '@modules/users/repositories/fakes/FakeUserTokensRepository';
-import FakeHashProvider from '@modules/users/providers/HashProvider/fakes/FakeHashProvider'
-import ResetPasswordService from './ResetPasswordService';
+import FakeUsersRepository from '@modules/users/repositories/fake/FakeUsersRepository';
+import FakeUserTokensRepository from '@modules/users/repositories/fake/FakeUserTokensRepository';
+import FakeHashProvider from '@modules/users/providers/HashProvider/fakes/FakeHashProvider';
 
 import AppError from '@shared/errors/AppError';
+import ResetPasswordService from './ResetPasswordService';
 
 let fakeUsersRepository: FakeUsersRepository;
-let fakeUserTokenRepository: FakeUserTokenRepository;
+let fakeUserTokensRepository: FakeUserTokensRepository;
 let resetPasswordService: ResetPasswordService;
 let fakeHashProvider: FakeHashProvider;
 
 describe('ResetPasswordService', () => {
 	beforeEach(() => {
 		fakeUsersRepository = new FakeUsersRepository();
-    fakeUserTokenRepository = new FakeUserTokenRepository();
-    fakeHashProvider = new FakeHashProvider();
-		resetPasswordService = new ResetPasswordService(fakeUsersRepository, fakeUserTokenRepository, fakeHashProvider);
+		fakeUserTokensRepository = new FakeUserTokensRepository();
+		fakeHashProvider = new FakeHashProvider();
+		resetPasswordService = new ResetPasswordService(
+			fakeUsersRepository,
+			fakeUserTokensRepository,
+			fakeHashProvider
+		);
 	});
 
-	it('should be able to reset the password', async () => {
+	it('resets password', async () => {
+		const generateHash = jest.spyOn(fakeHashProvider, 'generateHash');
+
+		const newPassword = 'new pass';
 		const user = await fakeUsersRepository.create({
+			email: 'bernardogeneroso@email.com',
 			name: 'Bernardo Generoso',
-			email: 'bernardogeneroso@exemplo.com',
-			password: 'old_password'
+			password: 'bernardogeneroso123'
 		});
 
-    const { token } = await fakeUserTokenRepository.generate(user.id);
+		const { token } = await fakeUserTokensRepository.generate(user.id);
+		await resetPasswordService.execute({ token, password: newPassword });
 
-    const generateHash = jest.spyOn(fakeHashProvider, 'generateHash')
+		const updatedUser = await fakeUsersRepository.findById(user.id);
 
-		await resetPasswordService.execute({
-			password: 'bernardogeneroso123',
-			token
-		});
+		expect(generateHash).toHaveBeenCalledWith(newPassword);
+		expect(updatedUser?.password).toBe(newPassword);
+	});
 
-		const updateUser = await fakeUsersRepository.findById(user.id);
+	it('does not reset password for non existent token', async () => {
+		await expect(
+			resetPasswordService.execute({
+				token: 'non-existent-token',
+				password: 'password'
+			})
+		).rejects.toBeInstanceOf(AppError);
+	});
 
-    expect(generateHash).toHaveBeenCalledWith('bernardogeneroso123')
-		expect(updateUser?.password).toBe('bernardogeneroso123');
-  });
+	it('does not reset password for non existent user', async () => {
+		const { token } = await fakeUserTokensRepository.generate('non-existent-id');
 
-  it('should not be able to reset the password with non-existing token', async () => {
-    await expect(resetPasswordService.execute({
-      token: 'non-existing-token',
-      password: 'bernardogeneroso123'
-    })).rejects.toBeInstanceOf(AppError)
-  });
+		await expect(
+			resetPasswordService.execute({
+				token,
+				password: 'bernardogeneroso123'
+			})
+		).rejects.toBeInstanceOf(AppError);
+	});
 
-  it('should not be able to reset the password with non-existing user', async () => {
-    const {token} = await fakeUserTokenRepository.generate('non-existing-user')
-
-    await expect(resetPasswordService.execute({
-      token,
-      password: 'bernardogeneroso123'
-    })).rejects.toBeInstanceOf(AppError)
-  });
-
-  it('should not be able to reset password if passed more then 2 hours', async () => {
+	it('does not reset password after two hours', async () => {
+		const newPassword = 'new pass';
 		const user = await fakeUsersRepository.create({
+			email: 'bernardogeneroso@email.com',
 			name: 'Bernardo Generoso',
-			email: 'bernardogeneroso@exemplo.com',
-			password: 'old_password'
+			password: 'bernardogeneroso'
 		});
 
-    const { token } = await fakeUserTokenRepository.generate(user.id);
+		const { token } = await fakeUserTokensRepository.generate(user.id);
 
-    jest.spyOn(Date, 'now').mockImplementationOnce(() => {
-      const customDate = new Date()
+		jest.spyOn(Date, 'now').mockImplementationOnce(() => {
+			const customDate = new Date();
+			return customDate.setHours(customDate.getHours() + 3);
+		});
 
-      return customDate.setHours(customDate.getHours() + 3)
-    })
-
-		await expect(resetPasswordService.execute({
-			password: 'bernardogeneroso123',
-			token
-		})).rejects.toBeInstanceOf(AppError)
-
-  });
+		await expect(
+			resetPasswordService.execute({
+				token,
+				password: newPassword
+			})
+		).rejects.toBeInstanceOf(AppError);
+	});
 });
