@@ -1,36 +1,38 @@
-import { injectable, inject } from 'tsyringe'
+import { injectable, inject } from 'tsyringe';
 
-import User from '@modules/users/infra/typeorm/models/User'
-import AppError from '@shared/errors/AppError'
-import IUsersRepository from '@modules/users/repositories/IUsersRepository'
-import IHashProvider from '@modules/users/providers/HashProvider/models/IHashProvider'
+import User from '@modules/users/infra/typeorm/models/User';
+import AppError from '@shared/errors/AppError';
+import IUsersRepository from '@modules/users/repositories/IUsersRepository';
+import IHashProvider from '@modules/users/providers/HashProvider/models/IHashProvider';
+import ICacheProvider from '@shared/container/providers/CacheProvider/models/ICacheProvider';
 
 interface IRequest {
-  name: string
-  email: string
-  password: string
+	name: string;
+	email: string;
+	password: string;
 }
 
 @injectable()
 class CreateUserService {
-  constructor(
-    @inject('UsersRepository')
-    private usersRepository: IUsersRepository,
+	constructor(
+		@inject('UsersRepository') private usersRepository: IUsersRepository,
+		@inject('HashProvider') private hashProvider: IHashProvider,
+		@inject('CacheProvider') private cacheProvider: ICacheProvider
+	) {}
 
-    @inject('HashProvider')
-    private hashProvider: IHashProvider
-  ) {}
+	public async execute({ name, email, password }: IRequest): Promise<User> {
+		const isAlreadyRegistered = await this.usersRepository.findByEmail(email);
 
-  public async execute({ name, email, password }: IRequest): Promise<User> {
-    const isAlreadyRegistered = await this.usersRepository.findByEmail(email)
-    if (isAlreadyRegistered) throw new AppError('Email address already used.')
+		if (isAlreadyRegistered) throw new AppError('Email address already used.');
 
-    const hashedPass = await this.hashProvider.generateHash(password)
-    const data = { name, email, password: hashedPass }
-    const user = await this.usersRepository.create(data)
+		const hashedPass = await this.hashProvider.generateHash(password);
 
-    return user
-  }
+		const user = await this.usersRepository.create({ name, email, password: hashedPass });
+
+		await this.cacheProvider.invalidatePrefix(`providers-list`);
+
+		return user;
+	}
 }
 
-export default CreateUserService
+export default CreateUserService;
