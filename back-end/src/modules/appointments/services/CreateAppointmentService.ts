@@ -27,10 +27,12 @@ class CreateAppointmentService {
 		const isBusinessHours = getHours(appointmentDate) >= 8 && getHours(appointmentDate) <= 17;
 
 		if (isPastDate) throw new AppError(errors.pastDate);
+
 		if (provider_id === user_id) throw new AppError(errors.invalidUserId);
+
 		if (!isBusinessHours) throw new AppError(errors.businessHours);
 
-		const findAppointment = await this.appointmentRepository.findByDate(appointmentDate);
+		const findAppointment = await this.appointmentRepository.findByDate(appointmentDate, provider_id);
 
 		if (findAppointment) throw new AppError(errors.alreadyBooked);
 
