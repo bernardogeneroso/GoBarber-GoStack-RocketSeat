@@ -1,7 +1,7 @@
 {
-	"extends": [ "eslint:recommended", "plugin:@typescript-eslint/recommended" ],
-	"parser": "@typescript-eslint/parser",
-	"parserOptions": {
-		"project": "./tsconfig.json"
+	"root": true,
+	"extends": "@react-native-community",
+	"rules": {
+		"prettier/prettier": 0
 	}
 }
