@@ -1,16 +1,18 @@
 import React from 'react';
-import {View, Text, Button} from 'react-native';
+import {Button} from 'react-native';
 
 import {useAuth} from '../../hooks/Auth';
+
+import {Container, Text} from './styles';
 
 const Dashboard: React.FC = () => {
   const {signOut} = useAuth();
 
   return (
-    <View>
+    <Container>
       <Text>Olá Dashboard</Text>
       <Button title="Logout" onPress={signOut} />
-    </View>
+    </Container>
   );
 };
 

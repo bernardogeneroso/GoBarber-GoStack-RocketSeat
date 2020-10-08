@@ -22,7 +22,7 @@ interface SignInCredentials {
 
 interface AuthContextData {
   user: object;
-  loading:  boolean;
+  loading: boolean;
   signIn(credentials: SignInCredentials): Promise<void>;
   signOut(): void;
 }
