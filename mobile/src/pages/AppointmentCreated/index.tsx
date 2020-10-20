@@ -1,17 +1,43 @@
-import React from 'react';
-import {Button} from 'react-native';
+import React, {useCallback} from 'react';
+import Icon from 'react-native-vector-icons/Feather';
 
-import {useAuth} from '../../hooks/Auth';
+import {useNavigation, useRoute} from '@react-navigation/native';
 
-import {Container, Text} from './styles';
+import {Container, Title, Description, OkButton, OkButtonText} from './styles';
+
+interface RouteParams {
+  date: number;
+}
 
 const AppointmentCreated: React.FC = () => {
-  const {signOut} = useAuth();
+  const {reset} = useNavigation();
+  const {params} = useRoute();
+
+  const routeParams = params as RouteParams;
+
+  const handleOkPressed = useCallback(() => {
+    reset({
+      routes: [
+        {
+          name: 'Dashboard',
+        },
+      ],
+      index: 0,
+    });
+  }, [reset]);
 
   return (
     <Container>
-      <Text>Olá AppointmentCreated</Text>
-      <Button title="Logout" onPress={signOut} />
+      <Icon name="check" size={80} color="#04d361" />
+
+      <Title>Scheduling complete</Title>
+      <Description>
+        Descrição grande tesrte som teste sonfehfehfuejhfjeh
+      </Description>
+
+      <OkButton onPress={handleOkPressed}>
+        <OkButtonText>Ok</OkButtonText>
+      </OkButton>
     </Container>
   );
 };
