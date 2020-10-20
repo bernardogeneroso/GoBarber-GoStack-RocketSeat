@@ -14,6 +14,7 @@ const App: React.FC = () => (
       barStyle="light-content"
       backgroundColor="#312e38"
       networkActivityIndicatorVisible
+      translucent
     />
 
     <AppProvider>
