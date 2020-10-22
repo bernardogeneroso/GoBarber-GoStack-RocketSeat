@@ -63,9 +63,10 @@ const SignIn: React.FC = () => {
           abortEarly: false,
         });
 
-        await signIn({email: data.email, password: data.password});
-
-        //history.push('/dashboard');
+        await signIn({
+          email: data.email,
+          password: data.password,
+        });
       } catch (err) {
         if (err instanceof Yup.ValidationError) {
           const erros = getValidationErrors(err);
@@ -74,6 +75,8 @@ const SignIn: React.FC = () => {
 
           return;
         }
+
+        console.log(err);
 
         Alert.alert('Error in authentication', err.response.data.message);
       }

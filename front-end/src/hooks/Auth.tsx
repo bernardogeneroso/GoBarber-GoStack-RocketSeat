@@ -54,8 +54,6 @@ const AuthProvider: React.FC = ({ children }) => {
 
     api.defaults.headers.authorization = `Bearer ${token}`;
 
-    console.log("aqui2");
-
     setData({ token, user });
   }, []);
 

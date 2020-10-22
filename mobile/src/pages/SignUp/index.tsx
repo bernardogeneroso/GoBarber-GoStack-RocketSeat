@@ -58,9 +58,7 @@ const SignUp: React.FC = () => {
 
         await api.post('/users', data);
 
-        Alert.alert('Registration completed', 'You can now login to GoBarber!');
-
-        navigation.goBack();
+        navigation.navigate('SignUpCreated');
       } catch (err) {
         if (err instanceof Yup.ValidationError) {
           const erros = getValidationErrors(err);
