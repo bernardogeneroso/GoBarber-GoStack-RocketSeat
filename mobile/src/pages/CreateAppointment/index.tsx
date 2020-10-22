@@ -4,6 +4,7 @@ import {Platform, Alert} from 'react-native';
 import {format} from 'date-fns';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/Feather';
+import {Avatar} from 'react-native-elements';
 
 import {useAuth} from '../../hooks/Auth';
 import api from '../../services/api';
@@ -175,7 +176,20 @@ const CreateAppointment: React.FC = () => {
 
         <HeaderTitle>Hairdressers</HeaderTitle>
 
-        <UserAvatar source={{uri: user.avatar_url}} />
+        <Avatar
+          size="medium"
+          rounded
+          title={user.name[0]}
+          activeOpacity={0.7}
+          source={{
+            uri: user.avatar_url
+              ? user.avatar_url
+              : 'https://img.pngio.com/simple-user-icon-transparent-png-stickpng-user-logo-png-2240_2240.png',
+          }}
+          placeholderStyle={{
+            backgroundColor: '#39373b',
+          }}
+        />
       </Header>
 
       <Content>

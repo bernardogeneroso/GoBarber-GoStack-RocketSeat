@@ -1,4 +1,4 @@
-import React, {useRef, useCallback} from 'react';
+import React, {useRef, useCallback, useState} from 'react';
 import {
   View,
   ScrollView,
@@ -6,6 +6,7 @@ import {
   Platform,
   TextInput,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 
 import * as Yup from 'yup';
@@ -15,6 +16,7 @@ import {FormHandles} from '@unform/core';
 import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
 import ImagePicker from 'react-native-image-picker';
+import {Avatar} from 'react-native-elements';
 
 import api from '../../services/api';
 import {useAuth} from '../../hooks/Auth';
@@ -23,13 +25,7 @@ import getValidationErrors from '../../utils/getValidationErrors';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 
-import {
-  Container,
-  Title,
-  UserAvatarButton,
-  UserAvatar,
-  BackButton,
-} from './styles';
+import {Container, Title, UserAvatarContent, BackButton} from './styles';
 
 interface ProfileFormData {
   name: string;
@@ -40,6 +36,8 @@ interface ProfileFormData {
 }
 
 const Profile: React.FC = () => {
+  const [avatarLoading, setAvatarLoading] = useState<boolean>(false);
+
   const {user, updateUser} = useAuth();
 
   const formRef = useRef<FormHandles>(null);
@@ -137,6 +135,8 @@ const Profile: React.FC = () => {
           return;
         }
 
+        setAvatarLoading(true);
+
         const data = new FormData();
 
         data.append('avatar', {
@@ -146,6 +146,7 @@ const Profile: React.FC = () => {
         });
 
         api.patch('/users/avatar', data).then((apiResponse) => {
+          setAvatarLoading(false);
           updateUser(apiResponse.data);
         });
       },
@@ -170,9 +171,23 @@ const Profile: React.FC = () => {
               <Icon name="chevron-left" size={24} color="#999591" />
             </BackButton>
 
-            <UserAvatarButton onPress={handleUpdateAvatar}>
-              <UserAvatar source={{uri: user.avatar_url}} />
-            </UserAvatarButton>
+            <UserAvatarContent>
+              {avatarLoading ? (
+                <ActivityIndicator size="large" color="#fff" />
+              ) : (
+                <Avatar
+                  size="xlarge"
+                  rounded
+                  title={user.name[0]}
+                  onPress={handleUpdateAvatar}
+                  activeOpacity={0.7}
+                  source={{uri: user.avatar_url}}
+                  placeholderStyle={{
+                    backgroundColor: '#39373b',
+                  }}
+                />
+              )}
+            </UserAvatarContent>
 
             <View>
               <Title>Your profile</Title>
