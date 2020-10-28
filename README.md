@@ -1,9 +1,8 @@
 # GoBarber-GoStack-RocketSeat
 
-## Error resolve:
-This error occurs on mobile:
+## Error on mobile solution:
 
-The version used in the mobile project, has a bug in Node Modules in the image upload file, here is the link to update the file.
+The version used in react has a bug in the Node Modules of the image upload file, here is the link to update the file.
 
 Solution:
 ```
