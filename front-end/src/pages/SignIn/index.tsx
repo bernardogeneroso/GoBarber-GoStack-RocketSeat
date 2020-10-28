@@ -75,7 +75,12 @@ const SigIn: React.FC = () => {
           <Form ref={formRef} onSubmit={handleSubmit}>
             <h1>Log In</h1>
 
-            <Input name="email" icon={FiMail} type="text" placeholder="Email" />
+            <Input
+              name="email"
+              icon={FiMail}
+              type="text"
+              placeholder="E-mail"
+            />
             <Input
               name="password"
               icon={FiLock}
@@ -83,7 +88,7 @@ const SigIn: React.FC = () => {
               placeholder="Password"
             />
 
-            <Button type="submit">Log In</Button>
+            <Button type="submit">Log in</Button>
 
             <Link to="/forgot-password">I forgot my password</Link>
           </Form>
